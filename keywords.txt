@@ -1,0 +1,13 @@
+LittleVector    KEYWORD1
+SetAllocationFactor KEYWORD2
+begin   KEYWORD2
+end KEYWORD2
+size    KEYWORD2
+capacity    KEYWORD2
+empty   KEYWORD2
+reserve KEYWORD2
+shrink_to_fit   KEYWORD2
+push_back   KEYWORD2
+pop_back    KEYWORD2
+erase   KEYWORD2
+clear   KEYWORD2
