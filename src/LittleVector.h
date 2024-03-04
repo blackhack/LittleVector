@@ -114,6 +114,9 @@ public:
 
     iterator erase(iterator position)
     {
+        if (empty())
+            return end();
+
         size_t array_index = static_cast<size_t>(position - begin());
 
         _content[array_index].~T();
@@ -124,6 +127,28 @@ public:
         --_size;
 
         return begin() + array_index;
+    }
+
+    iterator erase(iterator first, iterator last)
+    {
+        if (first == last)
+            return first;
+
+        size_t first_index = static_cast<size_t>(first - begin());
+        size_t last_index = static_cast<size_t>(last - begin());
+        size_t diff_index = last_index - first_index;
+
+        for (size_t i = first_index; i < _size; ++i)
+        {
+            if (i < last_index)
+                _content[i].~T();
+            if (i + diff_index < _size)
+                _content[i] = _content[i + diff_index];
+        }
+
+        _size -= diff_index;
+
+        return begin() + first_index;
     }
 
     void clear()
