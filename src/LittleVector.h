@@ -29,13 +29,13 @@ template <class T>
 class LittleVector
 {
 private:
-    T *_content;
+    T* _content;
     size_t _size;
     size_t _capacity;
     bool _over_allocation;
 
 public:
-    using iterator = T *;
+    using iterator = T*;
 
     LittleVector()
     {
@@ -104,6 +104,34 @@ public:
             return;
 
         _m_allocation(_size);
+    }
+
+    T& operator[](size_t n)
+    {
+        return _content[n];
+    }
+
+    T& at(size_t n)
+    {
+        if (n >= _size)
+            abort(); // There are no C++ exceptions on Arduino
+
+        return _content[n];
+    }
+
+    T& front()
+    {
+        return *begin();
+    }
+
+    T& back()
+    {
+        return *(end() - 1);
+    }
+
+    T* data()
+    {
+        return _content;
     }
 
     void push_back(const T &val)
