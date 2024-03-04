@@ -32,7 +32,7 @@ private:
     T *_content;
     size_t _size;
     size_t _capacity;
-    size_t _allocation_factor;
+    bool _over_allocation;
 
 public:
     using iterator = T *;
@@ -42,7 +42,7 @@ public:
         _content = nullptr;
         _size = 0;
         _capacity = 0;
-        _allocation_factor = 2;
+        _over_allocation = true;
     }
 
     ~LittleVector()
@@ -51,7 +51,19 @@ public:
         _m_allocation(0);
     }
 
-    void SetAllocationFactor(size_t factor) { _allocation_factor = factor; }
+    /**
+     *  @brief Enable or disable over allocation.
+     *  @param val bool to set true or false
+     *
+     *  @note By default, capacity grows by a factor of 2 to reduce allocations and copies.
+     *  However, this can lead to increased memory usage, so it can be disabled.
+     *  The disadvantage is that it will now cause an increase in allocations and copies,
+     *  reducing speed and accelerating memory fragmentation in embedded systems.
+     *  The best option is always to use void reserve(size_t n), effectively reducing
+     *  allocations to one in the vector's lifetime and guaranteeing that you use only
+     *  the amount of memory needed.
+     */
+    void SetOverAllocation(bool val) { _over_allocation = val; }
 
     iterator begin()
     {
@@ -97,7 +109,7 @@ public:
     void push_back(const T &val)
     {
         if (_capacity == _size)
-            reserve(_capacity == 0 ? 1 : _capacity * _allocation_factor);
+            reserve(_capacity == 0 ? 1 : (_over_allocation ? _capacity * 2 : _capacity + 1));
 
         _content[_size] = val;
         ++_size;
@@ -117,7 +129,7 @@ public:
         size_t array_index = static_cast<size_t>(position - begin());
 
         if (_capacity == _size)
-            reserve(_capacity == 0 ? 1 : _capacity * _allocation_factor);
+            reserve(_capacity == 0 ? 1 : (_over_allocation ? _capacity * 2 : _capacity + 1));
 
         for (size_t i = _size; i > array_index; --i)
             _content[i] = _content[i - 1];
@@ -134,9 +146,9 @@ public:
         size_t array_index = static_cast<size_t>(position - begin());
 
         if (_capacity < _size + n)
-            reserve(_capacity == 0 ? n : __max__(_capacity * _allocation_factor, _capacity + n));
+            reserve(_capacity == 0 ? n : (_over_allocation ? __max__(_capacity * 2, _capacity + n) : _capacity + n));
 
-        for (size_t i = _size + n; i > array_index; --i)
+        for (size_t i = _size + n - 1; i > array_index; --i)
             _content[i] = _content[i - n];
 
         for (size_t i = array_index; i < array_index + n; ++i)
