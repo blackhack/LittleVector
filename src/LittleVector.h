@@ -112,6 +112,41 @@ public:
         --_size;
     }
 
+    iterator insert(iterator position, const T &val)
+    {
+        size_t array_index = static_cast<size_t>(position - begin());
+
+        if (_capacity == _size)
+            reserve(_capacity == 0 ? 1 : _capacity * _allocation_factor);
+
+        for (size_t i = _size; i > array_index; --i)
+            _content[i] = _content[i - 1];
+
+        _content[array_index] = val;
+
+        ++_size;
+
+        return begin() + array_index;
+    }
+
+    iterator insert(iterator position, size_t n, const T &val)
+    {
+        size_t array_index = static_cast<size_t>(position - begin());
+
+        if (_capacity < _size + n)
+            reserve(_capacity == 0 ? n : __max__(_capacity * _allocation_factor, _capacity + n));
+
+        for (size_t i = _size + n; i > array_index; --i)
+            _content[i] = _content[i - n];
+
+        for (size_t i = array_index; i < array_index + n; ++i)
+            _content[i] = val;
+
+        _size += n;
+
+        return begin() + array_index;
+    }
+
     iterator erase(iterator position)
     {
         if (empty())
@@ -176,6 +211,8 @@ private:
 
         _capacity = n;
     }
+
+    size_t __max__(size_t a, size_t b) { return (a > b ? a : b); }
 };
 
 #endif // LittleVector_h__
