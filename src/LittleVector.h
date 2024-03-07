@@ -29,20 +29,67 @@ template <class T>
 class LittleVector
 {
 private:
-    T* _content;
-    size_t _size;
-    size_t _capacity;
     bool _over_allocation;
+    size_t _capacity;
+    size_t _size;
+    T* _content;
 
 public:
     using iterator = T*;
 
-    LittleVector()
+    explicit LittleVector()
     {
-        _content = nullptr;
-        _size = 0;
-        _capacity = 0;
         _over_allocation = true;
+        _capacity = 0;
+        _size = 0;
+        _content = nullptr;
+    }
+
+    explicit LittleVector(size_t n) : LittleVector()
+    {
+        reserve(n);
+        for (size_t i = 0; i < n; ++i)
+            push_back(T());
+    }
+
+    explicit LittleVector(size_t n, const T& val) : LittleVector()
+    {
+        insert(begin(), n, val);
+    }
+
+    LittleVector(const LittleVector& x)
+    {
+        _over_allocation = x._over_allocation;
+
+        // Initialize to 0 and nullptr so reserve() works correctly
+        _capacity = 0;
+        _size = 0;
+        _content = nullptr;
+        
+        reserve(x._size);
+        _size = x._size;
+
+        for (size_t i = 0; i < _size; ++i)
+            _content[i] = x._content[i];   
+    }
+
+    LittleVector &operator=(const LittleVector &x)
+    {
+        if (this != &x)
+        {
+            clear();
+            _over_allocation = x._over_allocation;
+
+            // It will only re-allocate if necessary
+            reserve(x._size);
+
+            _size = x._size;
+
+            for (size_t i = 0; i < _size; ++i)
+                _content[i] = x._content[i];
+        }
+
+        return *this;
     }
 
     ~LittleVector()
@@ -134,7 +181,7 @@ public:
         return _content;
     }
 
-    void push_back(const T &val)
+    void push_back(const T& val)
     {
         if (_capacity == _size)
             reserve(_capacity == 0 ? 1 : (_over_allocation ? _capacity * 2 : _capacity + 1));
@@ -152,7 +199,7 @@ public:
         --_size;
     }
 
-    iterator insert(iterator position, const T &val)
+    iterator insert(iterator position, const T& val)
     {
         size_t array_index = static_cast<size_t>(position - begin());
 
@@ -169,7 +216,7 @@ public:
         return begin() + array_index;
     }
 
-    iterator insert(iterator position, size_t n, const T &val)
+    iterator insert(iterator position, size_t n, const T& val)
     {
         size_t array_index = static_cast<size_t>(position - begin());
 
@@ -236,17 +283,17 @@ public:
 private:
     void _m_allocation(size_t n)
     {
-        T *new_alloc = nullptr;
+        T* new_alloc = nullptr;
 
         if (n > 0)
         {
-            new_alloc = reinterpret_cast<T *>(new uint8_t[n * sizeof(T)]);
+            new_alloc = reinterpret_cast<T*>(new uint8_t[n * sizeof(T)]);
 
             for (size_t i = 0; i < _size; ++i)
                 new_alloc[i] = _content[i];
         }
 
-        delete[] reinterpret_cast<uint8_t *>(_content);
+        delete[] reinterpret_cast<uint8_t*>(_content);
         _content = new_alloc;
 
         _capacity = n;
